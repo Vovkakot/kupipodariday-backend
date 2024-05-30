@@ -1,26 +1,36 @@
-import { Injectable } from '@nestjs/common';
-import { CreateWishlistDto } from './dto/create-wishlist.dto';
-import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import {Injectable, NotFoundException} from '@nestjs/common';
+import {CreateWishlistDto} from './dto/create-wishlist.dto';
+import {UpdateWishlistDto} from './dto/update-wishlist.dto';
+import {InjectRepository} from "@nestjs/typeorm";
+import {Wishlist} from "./entities/wishlist.entity";
+import {Repository} from "typeorm";
 
 @Injectable()
 export class WishlistsService {
-  create(createWishlistDto: CreateWishlistDto) {
-    return 'This action adds a new wishlist';
-  }
+    constructor(@InjectRepository(Wishlist) private wishListRepository: Repository<Wishlist>) {
+    }
 
-  findAll() {
-    return `This action returns all wishlists`;
-  }
+    create(createWishlistDto: CreateWishlistDto) {
+        return this.wishListRepository.create(createWishlistDto);
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wishlist`;
-  }
+    findAll() {
+        return this.wishListRepository.find();
+    }
 
-  update(id: number, updateWishlistDto: UpdateWishlistDto) {
-    return `This action updates a #${id} wishlist`;
-  }
+    findOne(id: number) {
+        return this.wishListRepository.findOneBy({id});
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} wishlist`;
-  }
+    update(id: number, updateWishlistDto: UpdateWishlistDto) {
+        const wishList = this.findOne(id)
+        if (!wishList) {
+            throw new NotFoundException()
+        }
+        return this.wishListRepository.update({id}, updateWishlistDto);
+    }
+
+    remove(id: number) {
+        return this.wishListRepository.delete({id});
+    }
 }

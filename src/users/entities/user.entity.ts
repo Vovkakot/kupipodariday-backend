@@ -1,6 +1,17 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn, ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 import {Max, Min} from "@nestjs/class-validator";
 import {IsEmail} from "class-validator";
+import {Wish} from "../../wishes/entities/wish.entity";
+import {Offer} from "../../offers/entities/offer.entity";
+import {Wishlist} from "../../wishlists/entities/wishlist.entity";
 
 @Entity()
 export class User {
@@ -29,7 +40,7 @@ export class User {
     avatar: string;
 
     @Column({
-        unique:true
+        unique: true
     })
     @IsEmail()
     email: string;
@@ -37,12 +48,27 @@ export class User {
     @Column()
     password: string;
 
-    @Column()
-    wishes: boolean;
+    @Column({
+        type:"varchar"
+    })
+    @OneToMany(() => Wish, wish => wish.owner)
+    wishes: Wish[];
 
-    @Column()
-    offers: boolean;
+    @Column({
+        type:"varchar"
+    })
+    @OneToMany(() => Offer, offer => offer.user)
+    offers: Offer[];
 
-    @Column()
-    wishlists: boolean;
+    @Column({
+        type:"varchar"
+    })
+    @OneToMany(() => Wishlist, wishlist => wishlist.items)
+    wishlists: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 } 
