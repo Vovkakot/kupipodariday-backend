@@ -9,6 +9,7 @@ import {Wish} from "./wishes/entities/wish.entity";
 import {Wishlist} from "./wishlists/entities/wishlist.entity";
 import {User} from "./users/entities/user.entity";
 import {Offer} from "./offers/entities/offer.entity";
+import {AuthModule} from "./auth/auth.module";
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import {Offer} from "./offers/entities/offer.entity";
         WishesModule,
         OffersModule,
         WishlistsModule,
+        AuthModule
     ],
     controllers: [AppController],
     providers: [],
