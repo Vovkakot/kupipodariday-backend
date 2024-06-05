@@ -6,23 +6,25 @@ import {UsersModule} from "../users/users.module";
 import {WishesModule} from "../wishes/wishes.module";
 import {WishlistsModule} from "../wishlists/wishlists.module";
 import {JwtModule} from "@nestjs/jwt";
+import {PassportModule} from "@nestjs/passport";
+import {ConfigModule, ConfigService} from "@nestjs/config";
+import {LocalStrategy} from "./strategy/local.strategy";
+import {JwtStrategy} from "./strategy/jwt.strategy";
 
 @Module({
-    controllers: [AuthController],
-    providers: [AuthService],
     imports: [
-        forwardRef(() => UsersModule),
-        forwardRef(() => WishesModule),
-        forwardRef(() => WishlistsModule),
-        JwtModule.register({
-            secret: 'SECRET',
-            signOptions: {
-                expiresIn: '24h'
-            },
-        })],
-    exports: [
-        AuthService, JwtModule
-    ]
+        UsersModule,
+        PassportModule,
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                secret: configService.get<string>('jwt_secret'),
+            }),
+            inject: [ConfigService],
+        }),
+    ],
+    controllers: [AuthController],
+    providers: [AuthService, JwtStrategy, LocalStrategy],
+    exports: [AuthService],
 })
-export class AuthModule {
-}
+export class AuthModule {}
