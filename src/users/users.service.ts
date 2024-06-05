@@ -6,10 +6,12 @@ import {User} from "./entities/user.entity";
 import {Repository} from "typeorm";
 import {plainToClass} from "class-transformer";
 import {FindUser} from "./dto/find-user.dto";
+import {JwtService} from "@nestjs/jwt";
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>) {
+    constructor(@InjectRepository(User) private userRepository: Repository<User>,
+                private  jwtService:JwtService) {
     }
 
     async create(createUserDto: CreateUserDto) {
@@ -58,8 +60,10 @@ export class UsersService {
     }
 
 
-    async findMe(){
-
+    async findMe(header){
+        const token = header
+        console.log(token)
+        this.jwtService.decode(token)
     }
 
 
