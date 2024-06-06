@@ -10,17 +10,20 @@ import {
 import {IsUrl, Max, Min} from "@nestjs/class-validator";
 import {User} from "../../users/entities/user.entity";
 import {Wish} from "../../wishes/entities/wish.entity";
+import {IsOptional, Length} from "class-validator";
+
 @Entity()
 export class Wishlist {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    @Min(1)
-    @Max(250)
+    @Length(1, 250)
     name: string
 
-    @Column({ length: 1500 })
+    @Column()
+    @Length(1, 1500)
+    @IsOptional()
     description: string;
 
     @Column()
@@ -28,9 +31,9 @@ export class Wishlist {
     image: string
 
     @Column({
-        type:"varchar"
+        type: "varchar"
     })
-    @OneToMany(() => Wish, wish => wish.wishlist)
+    @ManyToMany(() => Wish, wish => wish.wishlist)
     items: Wish[];
 
     @CreateDateColumn()
@@ -39,6 +42,6 @@ export class Wishlist {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => User, user => user.wishlists)
+    @ManyToOne(() => User, user => user.wishes)
     owner: User;
 }
