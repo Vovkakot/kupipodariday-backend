@@ -9,39 +9,33 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {
     }
 
-    @Post()
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
-    }
 
     @Post('/find')
     findUser(@Body() query: FindUser) {
         return this.usersService.findMany(query)
     }
     @Get('/me')
-    me(@Req() req:Request){
-        return this.usersService.findMe(req)
+    me(@Req() req){
+        return this.usersService.findMe(req.user.id)
     }
 
-    @Get()
-    findAll() {
-        return this.usersService.findAll();
+    @Patch('/me')
+    update( @Body() updateUserDto: UpdateUserDto, @Req() req) {
+        return this.usersService.update(req.user.id,updateUserDto);
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.usersService.findOne(+id);
+    @Get('/me/wishes')
+    getUserWishes(@Req() req) {
+        return this.usersService.getCurrentUserWishes(req.user.id);
+    }
+    @Get('/:username')
+    getUserByUsername(@Param('username') username: string) {
+        return this.usersService.getUserByUsername(username);
     }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        return this.usersService.update(+id, updateUserDto);
+    @Get('/:username/wishes')
+    getWishesByUsername(@Param('username') username: string) {
+        return this.usersService.getWishesByUsername(username);
     }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(+id);
-    }
-
 
 }

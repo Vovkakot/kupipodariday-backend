@@ -1,55 +1,81 @@
-import {Injectable, NotFoundException} from '@nestjs/common';
+import {BadRequestException, ConflictException, Injectable} from '@nestjs/common';
 import {CreateUserDto} from './dto/create-user.dto';
 import {UpdateUserDto} from './dto/update-user.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "./entities/user.entity";
-import {Repository} from "typeorm";
+import {QueryFailedError, Repository} from "typeorm";
 import {plainToClass} from "class-transformer";
 import {FindUser} from "./dto/find-user.dto";
-import {JwtService} from "@nestjs/jwt";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>,
-                private  jwtService:JwtService) {
+    constructor(@InjectRepository(User) private userRepository: Repository<User>) {
     }
 
     async create(createUserDto: CreateUserDto) {
-        const user = await this.userRepository.save(createUserDto)
-        return user
-    }
-
-    async findAll() {
-        const users = await this.userRepository.find();
-        return users.map(user => plainToClass(User, user));
-    }
-
-    async findOne(id: number): Promise<User> {
-        const user = await this.userRepository.findOneBy({id});
-        return plainToClass(User, user);
-    }
-
-    update(id: number, updateUserDto: UpdateUserDto) {
-        const user = this.findOne(id)
-        if (!user) {
-            throw new NotFoundException()
+        const {password} = createUserDto;
+        const hash = await bcrypt.hash(password, 10);
+        try {
+            const newUser = await this.userRepository.save({
+                ...createUserDto,
+                password: hash,
+            });
+            delete newUser.password;
+            return newUser;
+        } catch (error) {
+            if (error instanceof QueryFailedError) {
+                const err = error.driverError;
+                if (err.code === '23505') {
+                    throw new ConflictException(
+                        'Пользователь с таким email или username существует',
+                    );
+                }
+            }
         }
-        return this.userRepository.update({id}, updateUserDto);
     }
 
-    remove(id: number) {
-        return this.userRepository.delete({id});
+
+    async update(id: number, updateUserDto: UpdateUserDto) {
+        const user = await this.userRepository.findOne({
+            select: {
+                id: true,
+                username: true,
+                about: true,
+                avatar: true,
+                email: true,
+                password: true,
+            },
+            where: {
+                id: id,
+            },
+        });
+        for (const item in updateUserDto) {
+            if (item === 'password') {
+                user[item] = await bcrypt.hash(updateUserDto[item], 10);
+            } else {
+                user[item] = updateUserDto[item];
+            }
+            try {
+                const updUser = await this.userRepository.save(user);
+                delete updUser.password;
+                return updUser;
+            } catch (error) {
+                if (error instanceof QueryFailedError) {
+                    const err = error.driverError;
+                    if (err.code === '23505') {
+                        throw new ConflictException(
+                            'Пользователь с таким email или username существует',
+                        );
+                    }
+                }
+            }
+        }
     }
 
-    getByEmail(email: string) {
-        return this.userRepository.findOne({
-            where:
-                {email: email}
-        })
-    }
 
-    async findMany(searchTerm:FindUser): Promise<User[]> {
-        const{query}=searchTerm
+    async findMany(searchTerm: FindUser): Promise<User[]> {
+        const {query} = searchTerm
         const users = await this.userRepository.find({
             where: [
                 {username: query},
@@ -60,11 +86,48 @@ export class UsersService {
     }
 
 
-    async findMe(header){
-        const token = header
-        console.log(token)
-        this.jwtService.decode(token)
+    async findMe(id: number) {
+        return this.userRepository.findOneBy({id: id});
     }
 
+    async getCurrentUserWishes(userId: number) {
+        const user = await this.userRepository.findOne({
+            where: {
+                id: userId,
+            },
+            relations: {
+                wishes: true,
+            },
+        });
+        return user.wishes;
+    }
+    async getWishesByUsername(username: string) {
+        const user = await this.userRepository.findOne({
+            where: {
+                username,
+            },
+            relations: {
+                wishes: true,
+                offers: true,
+            },
+        });
+        if (!user)
+            throw new BadRequestException('Пользователь с таким ником не найден');
+        return user.wishes;
+    }
+    async getUserByUsername(username: string) {
+        const user = await this.userRepository.findOne({
+            select: {
+                id: true,
+                password: true,
+                username: true,
+                about: true,
+            },
+            where: {
+                username,
+            },
+        });
+        return user;
+    }
 
 }
