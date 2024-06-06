@@ -1,7 +1,15 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import {AuthGuard} from "@nestjs/passport";
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('offers')
 @UseGuards(AuthGuard('jwt'))
@@ -22,5 +30,4 @@ export class OffersController {
   findOne(@Param('id') id: string) {
     return this.offersService.findOne(+id);
   }
-
 }

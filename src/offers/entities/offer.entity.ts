@@ -1,41 +1,39 @@
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
-import {User} from "../../users/entities/user.entity";
-import {Wish} from "../../wishes/entities/wish.entity";
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Wish } from '../../wishes/entities/wish.entity';
 
 @Entity()
 export class Offer {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @PrimaryGeneratedColumn()
-    id: number;
+  @Column({
+    type: 'varchar',
+  })
+  @ManyToOne(() => User, (user) => user.offers)
+  user: User;
 
-    @Column({
-        type:"varchar"
-    })
-    @ManyToOne(() => User, user => user.offers)
-    user: User;
+  @ManyToOne(() => Wish, (wish) => wish.offers)
+  item: Wish;
 
+  @Column('decimal', { precision: 10, scale: 2 })
+  amount: number;
 
-    @ManyToOne(() => Wish, wish => wish.offers)
-    item: Wish;
+  @Column({
+    default: false,
+  })
+  hidden: boolean;
 
-    @Column('decimal', {precision: 10, scale: 2})
-    amount: number;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @Column({
-        default: false
-    })
-    hidden: boolean;
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

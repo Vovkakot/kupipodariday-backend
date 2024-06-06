@@ -1,4 +1,3 @@
-
 export class FindUser {
-    query: string;
+  query: string;
 }

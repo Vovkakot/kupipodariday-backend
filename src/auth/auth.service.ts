@@ -1,35 +1,34 @@
-import {HttpException, HttpStatus, Injectable, UnauthorizedException} from "@nestjs/common";
-import {JwtService} from "@nestjs/jwt";
-import * as bcrypt from 'bcryptjs'
-import {UsersService} from "../users/users.service";
-import {CreateUserDto} from "../users/dto/create-user.dto";
-import {User} from "../users/entities/user.entity";
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private jwtService: JwtService,
-        private userService: UsersService,
-    ) {}
+  constructor(
+    private jwtService: JwtService,
+    private userService: UsersService,
+  ) {}
 
-    auth(user: User) {
-        const payload = { sub: user.id };
+  auth(user: User) {
+    const payload = { sub: user.id };
 
-        return { access_token: this.jwtService.sign(payload, { expiresIn: '7d' }) };
-    }
+    return { access_token: this.jwtService.sign(payload, { expiresIn: '7d' }) };
+  }
 
-    async validatePassword(username: string, password: string) {
-        const user = await this.userService.getUserByUsername(username);
+  async validatePassword(username: string, password: string) {
+    const user = await this.userService.getUserByUsername(username);
 
-        if (user) {
-            return bcrypt.compare(password, user.password).then((matched) => {
-                if (!matched) {
-                    return null;
-                }
-                delete user.password;
-                return user;
-            });
+    if (user) {
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return null;
         }
-        return null;
+        delete user.password;
+        return user;
+      });
     }
+    return null;
+  }
 }
