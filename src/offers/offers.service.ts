@@ -9,8 +9,11 @@ import { validate } from 'class-validator';
 @Injectable()
 export class OffersService {
   constructor(
-    @InjectRepository(Offer) private offerRepository: Repository<Offer>,
+    @InjectRepository(Offer)
+    private offerRepository: Repository<Offer>,
+    @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Wish)
     private wishRepository: Repository<Wish>,
   ) {}
 

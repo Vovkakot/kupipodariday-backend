@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { WishesModule } from './wishes/wishes.module';
-import { OffersModule } from './offers/offers.module';
 import { WishlistsModule } from './wishlists/wishlists.module';
-import { Wish } from './wishes/entities/wish.entity';
-import { Wishlist } from './wishlists/entities/wishlist.entity';
+import { OffersModule } from './offers/offers.module';
 import { User } from './users/entities/user.entity';
+import { Wish } from './wishes/entities/wish.entity';
 import { Offer } from './offers/entities/offer.entity';
+import { Wishlist } from './wishlists/entities/wishlist.entity';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
