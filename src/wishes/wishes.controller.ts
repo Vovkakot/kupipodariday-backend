@@ -1,6 +1,7 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import {WishesService} from './wishes.service';
 import {CreateWishDto} from "./dto/create-wish.dto";
+import {AuthGuard} from "@nestjs/passport";
 
 @Controller('wishes')
 export class WishesController {
@@ -8,27 +9,43 @@ export class WishesController {
     }
 
     @Post()
-    create(@Body() createWishDto: CreateWishDto) {
-        return this.wishesService.create(createWishDto)
+    @UseGuards(AuthGuard('jwt'))
+    create(@Body() createWishDto: CreateWishDto, @Req() req) {
+        return this.wishesService.create(createWishDto, req.user.id)
     }
 
-    @Get()
-    findAll() {
-        return this.wishesService.findAll()
-    }
 
     @Get('id')
-    findOne(@Param('id') id: string) {
+    @UseGuards(AuthGuard('jwt'))
+    findOne(@Param('id') id: number) {
         return this.wishesService.findById(id)
     }
 
     @Patch('id')
-    update(@Param('id') id: string, @Body() creteWishDto: CreateWishDto) {
-        return this.wishesService.update(id, creteWishDto)
+    @UseGuards(AuthGuard('jwt'))
+    update(@Param('id') id: number, @Body() creteWishDto: CreateWishDto, @Req() req) {
+        return this.wishesService.update(id, creteWishDto, req.user.id)
     }
 
     @Delete('id')
-    remove(@Param('id') id: string) {
-        return this.wishesService.delete(id)
+    @UseGuards(AuthGuard('jwt'))
+    remove(@Param('id') id: number, @Req() req) {
+        return this.wishesService.delete(id, req.user.id)
+    }
+
+    @Get('last')
+    getLastWishes() {
+        return this.wishesService.getLastWishes();
+    }
+
+    @Get('top')
+    getTopWishes() {
+        return this.wishesService.getTopWishes();
+    }
+
+    @Post(':id/copy')
+    @UseGuards(AuthGuard('jwt'))
+    copy(@Param('id') id: number, @Req() req) {
+        return this.wishesService.copy(id, req.user.id);
     }
 }

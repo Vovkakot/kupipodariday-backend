@@ -11,14 +11,14 @@ import {IsUrl, Max, Min} from '@nestjs/class-validator';
 import {User} from "../../users/entities/user.entity";
 import {Offer} from "../../offers/entities/offer.entity";
 import {Wishlist} from "../../wishlists/entities/wishlist.entity";
+import {Length} from "class-validator";
 @Entity()
 export class Wish {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    @Min(1)
-    @Max(250)
+    @Length(1, 250)
     name: string
 
     @Column()
@@ -35,23 +35,9 @@ export class Wish {
     @Column('decimal', { precision: 10, scale: 2, default: 0 })
     raised: number
 
-    @Column({
-        type:"varchar"
-    })
-    @ManyToOne(() => User, user => user.wishes)
-    owner: User
-
-
     @Column()
-    @Min(1)
-    @Max(1024)
+    @Length(1, 1024)
     description: string
-
-    @Column({
-        type:"varchar"
-    })
-    @OneToMany(() => Offer, offer => offer.item)
-    offers: Offer[];
 
     @Column({ default: 0 })
     copied: number
@@ -63,5 +49,12 @@ export class Wish {
     updatedAt: Date;
 
     @ManyToOne(() => Wishlist, wishlist => wishlist.items)
-    wishlist: Wishlist;
+    wishlist: Wishlist[];
+
+    @ManyToOne(() => User, user => user.wishes)
+    owner: User
+
+    @OneToMany(() => Offer, offer => offer.item)
+    offers: Offer[];
+
 }
